@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layerform — Orders Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F9FB;
+    --ink:#16233A;
+    --nozzle:#FF5C1F;
+    --teal:#2FB8A6;
+    --line:#D9E2EC;
+    --soft:#5B6B84;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Sora',sans-serif;background:var(--paper);color:var(--ink);line-height:1.55}
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:16px clamp(16px,4vw,48px);border-bottom:2px solid var(--ink);
+    background:#fff;position:sticky;top:0;z-index:5;
+  }
+  .brand{font-weight:800;font-size:1.15rem;letter-spacing:-0.02em}
+  .brand span{color:var(--nozzle)}
+  .brand em{font-style:normal;font-weight:400;color:var(--soft);font-size:.85rem;margin-left:8px}
+  .hdr-actions{display:flex;gap:8px}
+  .btn{
+    font-family:inherit;font-weight:600;font-size:.9rem;cursor:pointer;
+    border:2px solid var(--ink);border-radius:999px;padding:8px 16px;background:#fff;color:var(--ink);
+    transition:background .12s,color .12s;
+  }
+  .btn:hover{background:var(--ink);color:#fff}
+  .btn.primary{background:var(--nozzle);color:#fff;font-weight:800}
+  .btn.primary:hover{background:var(--ink)}
+  .btn:disabled{opacity:.55;cursor:wait}
+  input,select{
+    width:100%;font-family:inherit;font-size:1rem;color:var(--ink);
+    background:#fff;border:2px solid var(--ink);border-radius:10px;padding:11px 13px;
+  }
+  input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+  label{font-weight:600;font-size:.92rem;display:block;margin-bottom:6px}
+
+  /* login */
+  .login-wrap{min-height:calc(100vh - 70px);display:grid;place-items:center;padding:24px}
+  .login-card{
+    width:min(420px,100%);background:#fff;border:2px solid var(--ink);border-radius:16px;
+    padding:28px;display:grid;gap:16px;
+  }
+  .login-card h1{font-size:1.5rem;font-weight:800;letter-spacing:-0.02em}
+  .login-card p{color:var(--soft);font-size:.95rem}
+
+  /* dashboard */
+  .dash{padding:clamp(16px,4vw,40px) clamp(16px,4vw,48px);display:none}
+  .dash-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .dash-top h1{font-size:clamp(1.3rem,3vw,1.8rem);font-weight:800;letter-spacing:-0.02em}
+  .count-pill{
+    display:inline-block;background:var(--teal);color:#fff;font-weight:800;
+    border:2px solid var(--ink);border-radius:999px;padding:2px 12px;font-size:.9rem;margin-left:8px;
+  }
+  .cards{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+  .card{
+    background:#fff;border:2px solid var(--ink);border-radius:14px;padding:18px;
+    display:grid;gap:12px;align-content:start;
+  }
+  .card-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .card-head h2{font-size:1.05rem;font-weight:800;letter-spacing:-0.01em}
+  .card-head time{font-size:.78rem;color:var(--soft);white-space:nowrap}
+  .req{
+    background:var(--paper);border:2px solid var(--line);border-radius:10px;
+    padding:12px;font-size:.95rem;white-space:pre-wrap;word-break:break-word;
+  }
+  .request-details{border:2px solid var(--line);border-radius:10px;overflow:hidden}
+  .request-details summary{cursor:pointer;padding:10px 12px;font-size:.88rem;font-weight:600;background:var(--paper)}
+  .request-details summary:focus-visible{outline:3px solid var(--teal);outline-offset:-3px}
+  .request-details .req{border:0;border-top:1px solid var(--line);border-radius:0}
+  .request-details .expanded-label{display:none}
+  .request-details[open] .expanded-label{display:inline}
+  .request-details[open] .collapsed-label{display:none}
+  .kv{display:grid;gap:4px;font-size:.88rem}
+  .kv div{display:flex;gap:8px}
+  .kv b{flex:none;min-width:86px;color:var(--soft);font-weight:600}
+  .kv a{color:var(--ink);font-weight:600;word-break:break-all}
+  .earn-bar{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    background:#fff;border:2px solid var(--ink);border-radius:14px;
+    padding:16px 20px;margin-bottom:18px;
+  }
+  .earn-left{display:flex;flex-direction:column;gap:2px}
+  .earn-left .earn-label{font-size:.85rem;color:var(--soft);font-weight:600}
+  .earn-left .earn-total{font-size:1.9rem;font-weight:800;letter-spacing:-0.02em;color:var(--ink)}
+  .earn-left .earn-sub{font-size:.8rem;color:var(--soft)}
+  .earn-total .earn-paid{color:var(--teal)}
+  .field-row{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+  .field-row .full{grid-column:1 / -1}
+  .field-row label{font-size:.78rem;color:var(--soft);margin-bottom:3px}
+  .field-row input,.field-row select{padding:9px 11px;font-size:.92rem;border-radius:9px}
+  .price-input{position:relative}
+  .price-input span.dollar{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--soft);font-weight:600;pointer-events:none}
+  .price-input input{padding-left:24px}
+  .pay-btn{
+    font-family:inherit;font-weight:700;font-size:.9rem;cursor:pointer;text-align:center;
+    border:2px solid var(--teal);background:var(--teal);color:#fff;border-radius:999px;
+    padding:9px 14px;text-decoration:none;display:block;
+  }
+  .pay-btn:hover{background:var(--ink);border-color:var(--ink)}
+  .pay-btn.disabled{background:#fff;color:var(--soft);border-color:var(--line);cursor:not-allowed;pointer-events:none}
+  .save-note{font-size:.78rem;color:var(--teal);font-weight:600;min-height:1em}
+  @media (max-width:520px){.field-row{grid-template-columns:1fr}}
+  .status-row{display:flex;align-items:center;gap:10px}
+  .status-row select{padding:8px 10px;font-weight:600;border-radius:999px;width:auto}
+  .status-row select.s-New{background:#FDEDE6;border-color:var(--nozzle)}
+  .status-row select.s-Quoted{background:#EAF1F7}
+  .status-row select.s-Paid{background:#E7F7F3;border-color:var(--teal)}
+  .status-row select.s-Shipped{background:var(--ink);color:#fff}
+  .pref-tag{
+    display:inline-block;border:2px solid var(--ink);border-radius:999px;
+    padding:2px 10px;font-size:.78rem;font-weight:600;background:var(--paper);
+  }
+  .earnings{
+    display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px;
+  }
+  .earn-card{
+    flex:1;min-width:200px;background:#fff;border:2px solid var(--ink);border-radius:14px;padding:16px 18px;
+  }
+  .earn-card.paid{background:#E7F7F3;border-color:var(--teal)}
+  .earn-card .lbl{font-size:.8rem;font-weight:600;color:var(--soft);text-transform:uppercase;letter-spacing:.03em}
+  .earn-card .amt{font-size:1.9rem;font-weight:800;letter-spacing:-0.02em;margin-top:2px}
+  .earn-card .sub{font-size:.8rem;color:var(--soft);margin-top:2px}
+  .cashout-btn{
+    font-family:inherit;font-weight:800;font-size:1rem;cursor:pointer;
+    border:2px solid var(--ink);border-radius:999px;padding:12px 24px;
+    background:var(--nozzle);color:#fff;transition:transform .12s;
+  }
+  .cashout-btn:hover{transform:translateY(-2px)}
+  .card .money-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .card .money-row.one{grid-template-columns:1fr}
+  .card .field-lbl{font-size:.78rem;font-weight:600;color:var(--soft);margin-bottom:4px;display:block}
+  .card input.mini,.card select.mini{padding:8px 10px;font-size:.92rem;border-radius:10px}
+  .card .price-in{font-weight:800}
+  .paid-badge{
+    display:inline-block;border-radius:999px;padding:3px 12px;font-size:.8rem;font-weight:800;
+    border:2px solid var(--ink);
+  }
+  .paid-badge.yes{background:var(--teal);color:#fff}
+  .paid-badge.no{background:#FDEDE6;color:var(--nozzle);border-color:var(--nozzle)}
+  .save-note{font-size:.78rem;color:var(--teal);font-weight:600;min-height:1em}
+  .del-btn{
+    font-family:inherit;font-weight:600;font-size:.85rem;cursor:pointer;
+    border:2px solid var(--nozzle);color:var(--nozzle);background:#fff;
+    border-radius:999px;padding:7px 14px;margin-left:auto;
+    transition:background .12s,color .12s;
+  }
+  .del-btn:hover{background:var(--nozzle);color:#fff}
+  .auto-note{font-size:.82rem;color:var(--soft)}
+  .empty,.loading{
+    border:2px dashed var(--line);border-radius:14px;padding:40px 20px;text-align:center;color:var(--soft);
+  }
+  .msg{display:none;border:2px solid var(--ink);border-radius:12px;padding:13px 16px;font-weight:600;margin-bottom:16px}
+  .msg.err{display:block;background:#FDEDE6;border-color:var(--nozzle)}
+  .msg.ok{display:block;background:#E7F7F3;border-color:var(--teal)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Layer<span>form</span><em>orders dashboard</em></div>
+  <div class="hdr-actions" id="hdrActions" style="display:none">
+    <button class="btn" id="downloadBtn">Download file</button>
+    <button class="btn" id="refreshBtn">Refresh</button>
+    <button class="btn" id="logoutBtn">Log out</button>
+  </div>
+</header>
+
+<!-- ============ LOGIN ============ -->
+<div class="login-wrap" id="loginView">
+  <div class="login-card">
+    <h1>Owner login</h1>
+    <p>Sign in to see every print request your website has received.</p>
+    <div>
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" autocomplete="username" value="kasztl.jacob@icloud.com">
+      <p style="font-size:.82rem;color:var(--soft);margin-top:5px">This dashboard only accepts the owner's email.</p>
+    </div>
+    <div>
+      <label for="loginPass">Password</label>
+      <input type="password" id="loginPass" autocomplete="current-password" placeholder="Your dashboard password">
+    </div>
+    <div class="msg" id="loginMsg"></div>
+    <button class="btn primary" id="loginBtn">Sign in</button>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<main class="dash" id="dashView">
+  <div class="dash-top">
+    <h1>Print requests<span class="count-pill" id="countPill">0</span></h1>
+    <span class="auto-note">Auto-updates every 5 seconds</span>
+  </div>
+  <div class="earn-bar">
+    <div class="earn-left">
+      <span class="earn-label">Money made (paid orders)</span>
+      <span class="earn-total"><span class="earn-paid" id="earnPaid">$0</span></span>
+      <span class="earn-sub" id="earnSub">$0 still waiting to be paid</span>
+    </div>
+    <a class="btn primary" id="cashOutBtn" href="#" style="text-decoration:none">Cash out my money</a>
+  </div>
+  <div class="earnings" id="earnings">
+    <div class="earn-card">
+      <div class="lbl">Total quoted</div>
+      <div class="amt" id="totalQuoted">$0</div>
+      <div class="sub">across all orders</div>
+    </div>
+    <div class="earn-card paid">
+      <div class="lbl">Money made (paid)</div>
+      <div class="amt" id="totalPaid">$0</div>
+      <div class="sub" id="tipLine">includes $0 in tips</div>
+    </div>
+    <div class="earn-card" style="display:flex;align-items:center;justify-content:center">
+      <button class="cashout-btn" id="cashoutBtn">Cash out my money</button>
+    </div>
+  </div>
+  <div class="msg" id="dashMsg"></div>
+  <div class="loading" id="loadingBox">Loading your requests…</div>
+  <div class="empty" id="emptyBox" style="display:none">
+    No requests yet. When someone submits the form on your site, it shows up here automatically.
+  </div>
+  <div class="cards" id="cards"></div>
+</main>
+
+<script>
+  /* ===== SETUP: paste your two Supabase values here (same ones as the shop page) ===== */
+  const SUPABASE_URL = 'https://usvpqidbjhnlfxewqlfl.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_ZZyGh3kDYhbevqZ9TJXHAQ_jLMbuv3v';
+
+  /* Only this email is allowed to sign in to the dashboard */
+  const OWNER_EMAIL = 'kasztl.jacob@icloud.com';
+
+  const configured = SUPABASE_URL.startsWith('https://');
+  const loginView = document.getElementById('loginView');
+  const dashView = document.getElementById('dashView');
+  const hdrActions = document.getElementById('hdrActions');
+  const loginMsg = document.getElementById('loginMsg');
+  const dashMsg = document.getElementById('dashMsg');
+  const loginBtn = document.getElementById('loginBtn');
+  const cardsEl = document.getElementById('cards');
+  const loadingBox = document.getElementById('loadingBox');
+  const emptyBox = document.getElementById('emptyBox');
+  const countPill = document.getElementById('countPill');
+
+  let token = null;
+  try { token = localStorage.getItem('lf_token'); } catch(e) {}
+
+  function headers(extra){
+    return Object.assign({
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json'
+    }, extra || {});
+  }
+
+  function show(view){
+    loginView.style.display = view === 'login' ? 'grid' : 'none';
+    dashView.style.display = view === 'dash' ? 'block' : 'none';
+    hdrActions.style.display = view === 'dash' ? 'flex' : 'none';
+  }
+
+  async function login(){
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    loginMsg.className = 'msg';
+    if (!configured){ loginMsg.className='msg err'; loginMsg.textContent='The dashboard isn\'t connected to its storage yet.'; return; }
+    if (!email || !pass){ loginMsg.className='msg err'; loginMsg.textContent='Enter your email and password.'; return; }
+    if (email.toLowerCase() !== OWNER_EMAIL.toLowerCase()){ loginMsg.className='msg err'; loginMsg.textContent='This dashboard only works for the owner\'s email.'; return; }
+    loginBtn.disabled = true; loginBtn.textContent = 'Signing in…';
+    try {
+      const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+        method:'POST',
+        headers:{ 'apikey': SUPABASE_ANON_KEY, 'Content-Type':'application/json' },
+        body: JSON.stringify({ email: email, password: pass })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.access_token) throw new Error(data.error_description || data.msg || 'Sign-in failed');
+      token = data.access_token;
+      try { localStorage.setItem('lf_token', token); } catch(e) {}
+      show('dash');
+      loadRequests();
+      startPolling();
+    } catch (err) {
+      loginMsg.className = 'msg err';
+      loginMsg.textContent = 'Could not sign in — check your email and password. (' + err.message + ')';
+    } finally {
+      loginBtn.disabled = false; loginBtn.textContent = 'Sign in';
+    }
+  }
+
+  let lastData = null;
+  let lastRows = [];
+  let allRows = [];
+  let pollTimer = null;
+
+  /* PASTE your payment-app cash-out link here once you set up Stripe/PayPal/etc.
+     Example: 'https://dashboard.stripe.com'  — leave as is until then. */
+  const CASHOUT_LINK = '';
+
+  function money(n){ return '$' + (Number(n)||0).toLocaleString('en-US',{minimumFractionDigits:0, maximumFractionDigits:2}); }
+
+  function recomputeTotals(){
+    let quoted = 0, paid = 0, tips = 0;
+    allRows.forEach(r => {
+      const p = Number(r.price)||0;
+      const t = Number(r.tip)||0;
+      quoted += p + t;
+      if (r.paid){ paid += p + t; tips += t; }
+    });
+    const q = document.getElementById('totalQuoted');
+    const pd = document.getElementById('totalPaid');
+    const tl = document.getElementById('tipLine');
+    if (q) q.textContent = money(quoted);
+    if (pd) pd.textContent = money(paid);
+    if (tl) tl.textContent = 'includes ' + money(tips) + ' in tips';
+  }
+
+  async function loadRequests(quiet){
+    if (!quiet){
+      dashMsg.className = 'msg'; dashMsg.textContent = '';
+      loadingBox.style.display = 'block'; emptyBox.style.display = 'none';
+      cardsEl.innerHTML = '';
+      lastData = null;
+    }
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/print_requests?select=*&order=created_at.desc', { headers: headers() });
+      if (res.status === 401){ logout(); return; }
+      if (!res.ok) throw new Error('load failed');
+      const rows = await res.json();
+      const fingerprint = JSON.stringify(rows);
+      if (quiet && fingerprint === lastData) return; // nothing new — leave the screen alone
+      lastData = fingerprint;
+      lastRows = rows;
+      allRows = rows;
+      loadingBox.style.display = 'none';
+      cardsEl.innerHTML = '';
+      countPill.textContent = rows.length;
+      emptyBox.style.display = rows.length ? 'none' : 'block';
+      rows.forEach(renderCard);
+      recomputeTotals();
+    } catch (err) {
+      if (quiet) return; // silent background check — try again in 5s
+      loadingBox.style.display = 'none';
+      dashMsg.className = 'msg err';
+      dashMsg.textContent = 'Could not load requests. Check your internet and hit Refresh.';
+    }
+  }
+
+  function startPolling(){
+    stopPolling();
+    pollTimer = setInterval(() => loadRequests(true), 5000);
+  }
+  function stopPolling(){
+    if (pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  const minimizedRequests = new Map();
+
+  function renderCard(r){
+    const card = document.createElement('article');
+    card.className = 'card';
+    const when = r.created_at ? new Date(r.created_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+    const addr = [r.street_address, r.city, r.state_or_region, r.zip_or_postal, r.country].filter(Boolean).map(esc).join(', ');
+    const status = r.status || 'New';
+    const price = (r.price != null && r.price !== '') ? Number(r.price) : '';
+    const tip = (r.tip != null && r.tip !== '') ? Number(r.tip) : '';
+    const paid = r.paid ? 'yes' : 'no';
+    const eta = r.delivery_date || '';
+
+    card.innerHTML =
+      '<div class="card-head"><h2>' + esc(r.name || 'No name') + '</h2><time>' + esc(when) + '</time></div>' +
+      '<span class="pref-tag">Wants quote by: ' + esc(r.send_quote_by || '—') + '</span>' +
+      '<details class="request-details"' + (minimizedRequests.get(String(r.id)) ? '' : ' open') + '>' +
+        '<summary><span class="expanded-label">Minimize request</span><span class="collapsed-label">Show request</span></summary>' +
+        '<div class="req">' + esc(r.request || '') + '</div>' +
+      '</details>' +
+      '<div class="kv">' +
+        '<div><b>Email</b><a href="mailto:' + esc(r.email) + '">' + esc(r.email || '—') + '</a></div>' +
+        '<div><b>Phone</b><a href="tel:' + esc(r.phone) + '">' + esc(r.phone || '—') + '</a></div>' +
+        '<div><b>Ship to</b><span>' + (addr || '—') + '</span></div>' +
+        '<div><b>Signed</b><span>' + esc(r.signature || '—') + '</span></div>' +
+      '</div>' +
+
+      '<div class="money-row">' +
+        '<div><span class="field-lbl">Status</span>' +
+          '<select class="mini st-sel s-' + esc(status) + '">' +
+            ['New','Quoted','Paid','Shipped'].map(s => '<option' + (s===status?' selected':'') + '>' + s + '</option>').join('') +
+          '</select></div>' +
+        '<div><span class="field-lbl">Paid yet?</span>' +
+          '<select class="mini paid-sel">' +
+            '<option value="no"' + (paid==='no'?' selected':'') + '>Not paid</option>' +
+            '<option value="yes"' + (paid==='yes'?' selected':'') + '>Paid</option>' +
+          '</select></div>' +
+      '</div>' +
+
+      '<div class="money-row">' +
+        '<div><span class="field-lbl">Price you\'re charging ($)</span>' +
+          '<input class="mini price-in price-input" type="number" min="0" step="0.01" placeholder="0.00" value="' + (price===''?'':price) + '"></div>' +
+        '<div><span class="field-lbl">Tip added ($)</span>' +
+          '<input class="mini tip-input" type="number" min="0" step="0.01" placeholder="0.00" value="' + (tip===''?'':tip) + '"></div>' +
+      '</div>' +
+
+      '<div class="money-row one">' +
+        '<div><span class="field-lbl">Date it\'s coming (delivery date)</span>' +
+          '<input class="mini date-input" type="date" value="' + esc(eta) + '"></div>' +
+      '</div>' +
+
+      '<div class="status-row">' +
+        '<button type="button" class="btn primary req-price-btn" style="font-size:.9rem;padding:9px 16px">Send price by email</button>' +
+        '<button type="button" class="del-btn">Delete</button>' +
+      '</div>' +
+      '<div class="save-note"></div>';
+
+    const requestDetails = card.querySelector('.request-details');
+    requestDetails.addEventListener('toggle', () => {
+      minimizedRequests.set(String(r.id), !requestDetails.open);
+    });
+
+    const stSel   = card.querySelector('.st-sel');
+    const paidSel = card.querySelector('.paid-sel');
+    const priceIn = card.querySelector('.price-input');
+    const tipIn   = card.querySelector('.tip-input');
+    const dateIn  = card.querySelector('.date-input');
+    const note    = card.querySelector('.save-note');
+    const delBtn  = card.querySelector('.del-btn');
+    const priceBtn= card.querySelector('.req-price-btn');
+
+    function flash(txt){ note.textContent = txt; setTimeout(()=>{ if(note.textContent===txt) note.textContent=''; }, 2500); }
+
+    async function patch(fields, okMsg){
+      try {
+        const res = await fetch(SUPABASE_URL + '/rest/v1/print_requests?id=eq.' + r.id, {
+          method:'PATCH', headers: headers({'Prefer':'return=minimal'}),
+          body: JSON.stringify(fields)
+        });
+        if (!res.ok) throw new Error();
+        Object.assign(r, fields);
+        lastData = null;      // let the next auto-refresh resync
+        recomputeTotals();
+        flash(okMsg || 'Saved.');
+      } catch(e){
+        dashMsg.className='msg err'; dashMsg.textContent='Could not save — try again.';
+      }
+    }
+
+    stSel.addEventListener('change', () => { stSel.className='mini st-sel s-'+stSel.value; patch({status:stSel.value}, 'Status: '+stSel.value); });
+    paidSel.addEventListener('change', () => patch({paid: paidSel.value==='yes'}, paidSel.value==='yes'?'Marked paid':'Marked not paid'));
+    priceIn.addEventListener('change', () => patch({price: priceIn.value===''?null:Number(priceIn.value)}, 'Price saved'));
+    tipIn.addEventListener('change', () => patch({tip: tipIn.value===''?null:Number(tipIn.value)}, 'Tip saved'));
+    dateIn.addEventListener('change', () => patch({delivery_date: dateIn.value||null}, 'Date saved'));
+
+    priceBtn.addEventListener('click', () => {
+      const p = priceIn.value ? ('$'+Number(priceIn.value).toFixed(2)) : '(your price)';
+      const d = dateIn.value ? new Date(dateIn.value+'T00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}) : '(date)';
+      const subject = encodeURIComponent('Your Layerform quote');
+      const body = encodeURIComponent(
+        'Hi ' + (r.name||'') + ',\n\n' +
+        'Thanks for your request: ' + (r.request||'') + '\n\n' +
+        'Your price is ' + p + '.\n' +
+        'Expected delivery: ' + d + '.\n\n' +
+        'To pay, use this link: [paste your payment link here]\n\n' +
+        'Thank you!\nLayerform'
+      );
+      window.location.href = 'mailto:' + encodeURIComponent(r.email||'') + '?subject=' + subject + '&body=' + body;
+    });
+
+    delBtn.addEventListener('click', async () => {
+      if (!confirm('Delete the request from ' + (r.name || 'this person') + '? This cannot be undone.')) return;
+      delBtn.disabled = true; delBtn.textContent = 'Deleting…';
+      try {
+        const res = await fetch(SUPABASE_URL + '/rest/v1/print_requests?id=eq.' + r.id, {
+          method:'DELETE', headers: headers({'Prefer':'return=minimal'})
+        });
+        if (!res.ok) throw new Error();
+        card.remove();
+        lastData = null;
+        allRows = allRows.filter(x => x.id !== r.id);
+        countPill.textContent = allRows.length;
+        recomputeTotals();
+        if (!cardsEl.children.length) emptyBox.style.display = 'block';
+      } catch(e){
+        delBtn.disabled = false; delBtn.textContent = 'Delete';
+        dashMsg.className='msg err'; dashMsg.textContent='Could not delete — try again.';
+      }
+    });
+
+    cardsEl.appendChild(card);
+  }
+
+  function logout(){
+    stopPolling();
+    token = null;
+    try { localStorage.removeItem('lf_token'); } catch(e) {}
+    show('login');
+  }
+
+  function downloadFile(){
+    if (!lastRows.length){
+      dashMsg.className='msg err'; dashMsg.textContent='Nothing to download yet.';
+      return;
+    }
+    const cols = [
+      ['created_at','Date'],['name','Name'],['email','Email'],['phone','Phone'],
+      ['send_quote_by','Wants quote by'],['request','Request'],
+      ['street_address','Street'],['city','City'],['state_or_region','State'],
+      ['zip_or_postal','ZIP'],['country','Country'],['signature','Signature'],['status','Status']
+    ];
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g,'""') + '"';
+    const lines = [cols.map(c => q(c[1])).join(',')];
+    lastRows.forEach(r => {
+      lines.push(cols.map(c => {
+        let v = r[c[0]];
+        if (c[0] === 'created_at' && v) v = new Date(v).toLocaleString();
+        return q(v);
+      }).join(','));
+    });
+    const blob = new Blob(["\ufeff" + lines.join("\r\n")], { type:'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const d = new Date();
+    a.download = 'layerform-requests-' + d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+    dashMsg.className='msg ok'; dashMsg.textContent='File saved to your Downloads folder — opens in Excel.';
+    setTimeout(() => { dashMsg.className='msg'; dashMsg.textContent=''; }, 3000);
+  }
+  document.getElementById('downloadBtn').addEventListener('click', downloadFile);
+  document.getElementById('cashoutBtn').addEventListener('click', () => {
+    if (CASHOUT_LINK && CASHOUT_LINK.startsWith('http')){
+      window.open(CASHOUT_LINK, '_blank');
+    } else {
+      alert('No payment app connected yet.\n\nOnce you set up Stripe, PayPal, or Cash App, paste your cash-out link into the dashboard file (marked CASHOUT_LINK) and this button will take you straight there to collect your money.');
+    }
+  });
+
+  document.getElementById('loginBtn').addEventListener('click', login);
+  document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+  document.getElementById('refreshBtn').addEventListener('click', loadRequests);
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+
+  if (configured && token){ show('dash'); loadRequests(); startPolling(); }
+  else show('login');
+</script>
+
+</body>
+</html>
